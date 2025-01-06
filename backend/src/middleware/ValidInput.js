@@ -1,8 +1,17 @@
 const {z} = require('zod');
 
-const validateSchema=(schema)=>(req,res,next)=>{
+const validateRegisterSchema=(req,res,next)=>{
     try{
-        schema.parse(req.body);
+        registerSchema.parse(req.body);
+        next();
+    } catch(err){
+        return res.status(400).json({error: err.errors.map((err)=>err.message)});
+    }
+}
+
+const validateLoginSchema=(req,res,next)=>{
+    try{
+        loginSchema.parse(req.body);
         next();
     } catch(err){
         return res.status(400).json({error: error.errors.map((err)=>err.message)});
@@ -20,4 +29,4 @@ const loginSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters long'),
   });
   
-module.exports = { validateSchema, registerSchema, loginSchema };
+module.exports = { validateRegisterSchema, validateLoginSchema };

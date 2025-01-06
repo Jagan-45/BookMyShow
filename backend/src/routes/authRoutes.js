@@ -1,13 +1,13 @@
 const express=require('express');
 
-const {verifyOTP,resendOTP,register,login}=require('../controllers/authController');
-const {valiidateSchema,registerSchema,loginSchema} = require('../middleware/ValidInput');
+const {verifyOtp,resendOtp,register,login}=require('../controllers/authController');
+const {validateRegisterSchema,validateLoginSchema} = require('../middleware/ValidInput');
 
 const router=express.Router();
-router.post('/login',valiidateSchema(loginSchema),login);
-router.post('/register',valiidateSchema(registerSchema),register);
+router.post('/login',validateLoginSchema,login);
+router.post('/register',validateRegisterSchema,register);
 
-router.post('/verify',verifyOTP);
-router.post('/resend',resendOTP);
+router.post('/verify',verifyOtp);
+router.post('/resend',resendOtp);
 
 module.exports=router;

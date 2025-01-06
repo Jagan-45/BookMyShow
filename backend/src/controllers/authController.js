@@ -1,32 +1,52 @@
 const User=require('../models/User');
+const transporter=require('../services/authServices').transporter;
+const sequelize=require('../config/database');
 
-const {generateOTP,sendEmail,hashPassword,comparePassword,generateToken}=require('../services/authServices');
 
-exports.register = async (req,res)=>{
-    try{
-        const {username,email,password}=req.body;
-        const hashedPassword=await hashPassword(password);
 
-        const otp=generateOTP();
-        const otpExpiresAt=new Date(Date.now()+5*60*1000);
+const {generateOTP,hashPassword,comparePassword,generateToken}=require('../services/authServices');
 
-        const user=await User.create({
+
+
+const { generateOTP, hashPassword, comparePassword, generateToken } = require('../services/authServices');
+
+const register = async (req, res) => {
+    const transaction = await sequelize.transaction();
+    try {
+        const { username, email, password } = req.body;
+        const hashedPassword = await hashPassword(password);
+
+        const otp = generateOTP();
+        const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+        const user = await User.create({
             username,
             email,
-            password:hashedPassword,
+            password: hashedPassword,
             otp,
             otpExpiresAt,
-        })
+        });
 
-        await sendEmail(email,'Your otp for verification',`Your OTP is:${otp}`);
+        await transaction.commit();
 
-        res.status(201).json({message:'user registered. verify otp sent to your email.'});
-    } catch(err){
-        res.status(400).json({error:err.message});
+        const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: 'Verify your email',
+            text: `Your OTP is ${otp}`,
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.status(201).json({ message: 'User registered. Verify OTP sent to your email.' });
+    } catch (err) {
+        if (transaction.finished !== 'commit') await transaction.rollback();
+        res.status(400).json({ error: err.message });
     }
 };
 
-exports.verifyOtp=async (req,res)=>{
+
+const verifyOtp=async (req,res)=>{
+    const transaction = await sequelize.transaction();
     try{
         const {email,otp}=req.body;
         const user= await User.findOne({where:{email}});
@@ -42,14 +62,18 @@ exports.verifyOtp=async (req,res)=>{
         user.otpExpiresAt=null;
         await user.save();
 
+        await transaction.commit();
+
         const token=generateToken(user);
         res.status(200).json({message:'otp verified successfully',token});
     } catch(err){
+        await transaction.rollback();
         res.status(400).json({error:err.message});
     }
 }
 
-exports.resendOtp=async (req,res)=>{
+const resendOtp=async (req,res)=>{
+    const transaction = await sequelize.transaction();
     try{
         const {email}=req.body;
 
@@ -61,15 +85,25 @@ exports.resendOtp=async (req,res)=>{
         user.otpExpiresAt=new Date(Date.now()+5*60*1000);
         await user.save();
 
-        await sendEmail(email,'Your otp for verification',`Your OTP is:${otp}`);
+        await transaction.commit();
+
+        const mailOptions={
+            from:process.env.EMAIL_USER,
+            to:email,
+            subject:'Verify your email',
+            text:`Your OTP is ${otp}`,
+        }
+        transporter.sendMail(mailOptions);
         res.status(200).json({message:'OTP resent successfully'});
     } catch(err){
+        await transaction.rollback();
         res.status(400).json({error:err.message});
     }
 
 }
 
-exports.login=async(req,res)=>{
+const login=async(req,res)=>{
+    const transaction = sequelize.transaction();
     try{
         const {email,password}=req.body;
 
@@ -82,9 +116,19 @@ exports.login=async(req,res)=>{
         if(!isPasswordValid) return res.status(401).json({error:'Invalid credentials'});
 
         const token=generateToken(user);
+        await transaction.commit();
+        res.cookie('authorization', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        })
+
 
         res.status(200).json({message:'Login Successfull',token});
     } catch(err){
         res.status(400).json({error:err.message});
     }
 }
+
+module.exports={register,verifyOtp,resendOtp,login};
