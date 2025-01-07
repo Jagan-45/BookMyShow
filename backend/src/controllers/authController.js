@@ -1,5 +1,5 @@
 const User=require('../models/User');
-const transporter=require('../services/authServices').transporter;
+const {transporter}=require('../services/authServices');
 const sequelize=require('../config/database');
 
 
@@ -7,8 +7,6 @@ const sequelize=require('../config/database');
 const {generateOTP,hashPassword,comparePassword,generateToken}=require('../services/authServices');
 
 
-
-const { generateOTP, hashPassword, comparePassword, generateToken } = require('../services/authServices');
 
 const register = async (req, res) => {
     const transaction = await sequelize.transaction();
@@ -30,7 +28,7 @@ const register = async (req, res) => {
         await transaction.commit();
 
         const mailOptions = {
-            from: process.env.EMAIL_USER,
+            from: "balujgn@gmail.com",
             to: email,
             subject: 'Verify your email',
             text: `Your OTP is ${otp}`,
@@ -67,7 +65,7 @@ const verifyOtp=async (req,res)=>{
         const token=generateToken(user);
         res.status(200).json({message:'otp verified successfully',token});
     } catch(err){
-        await transaction.rollback();
+        if (transaction.finished !== 'commit') await transaction.rollback();
         res.status(400).json({error:err.message});
     }
 }
@@ -96,14 +94,14 @@ const resendOtp=async (req,res)=>{
         transporter.sendMail(mailOptions);
         res.status(200).json({message:'OTP resent successfully'});
     } catch(err){
-        await transaction.rollback();
+        if (transaction.finished !== 'commit') await transaction.rollback();
         res.status(400).json({error:err.message});
     }
 
 }
 
 const login=async(req,res)=>{
-    const transaction = sequelize.transaction();
+    const transaction = await sequelize.transaction();
     try{
         const {email,password}=req.body;
 
@@ -117,16 +115,18 @@ const login=async(req,res)=>{
 
         const token=generateToken(user);
         await transaction.commit();
-        res.cookie('authorization', token, {
+        res.cookie('authorization', "bearer "+token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
             maxAge: 7 * 24 * 60 * 60 * 1000
         })
 
-
+        // const tokencheck="bearer "+token;
+        // console.log(tokencheck.split(' ')[1]);
         res.status(200).json({message:'Login Successfull',token});
     } catch(err){
+        if (transaction.finished !== 'commit') await transaction.rollback();
         res.status(400).json({error:err.message});
     }
 }

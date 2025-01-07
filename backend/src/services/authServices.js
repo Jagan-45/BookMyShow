@@ -3,14 +3,17 @@ require('dotenv').config();
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.brevo.com',
-    port: 587,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
-});
+const transporter=nodemailer.createTransport(
+    {
+      service:'gmail',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth:{
+        user:'balujgn@gmail.com',
+        pass:"cnfe decz ltdg bnhv"
+      }
+    })
 
 console.log('Transporter initialized:', transporter);
 
