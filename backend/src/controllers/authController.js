@@ -85,6 +85,7 @@ const resendOtp=async (req,res)=>{
 
         await transaction.commit();
 
+        console.log(process.env.EMAIL_PASS)
         const mailOptions={
             from:process.env.EMAIL_USER,
             to:email,

@@ -11,7 +11,7 @@ const transporter=nodemailer.createTransport(
       secure: true,
       auth:{
         user:'balujgn@gmail.com',
-        pass:"cnfe decz ltdg bnhv"
+        pass:process.env.EMAIL_PASS,
       }
     })
 
