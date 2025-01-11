@@ -37,7 +37,9 @@ const register = async (req, res) => {
         await transporter.sendMail(mailOptions);
         res.status(201).json({ message: 'User registered. Verify OTP sent to your email.' });
     } catch (err) {
+        console.log("---------------------")
         if (transaction.finished !== 'commit') await transaction.rollback();
+        console.log("hi this error",err);
         res.status(400).json({ error: err.message });
     }
 };

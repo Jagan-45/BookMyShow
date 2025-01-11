@@ -1,5 +1,6 @@
 const {z} = require('zod');
 
+
 const validateRegisterSchema=(req,res,next)=>{
     try{
         registerSchema.parse(req.body);

@@ -1,15 +1,18 @@
-import { where } from 'sequelize';
+
 
 const {transporter}=require('../services/authServices')
 const sequelize=require('../config/database');
-const Theatre=require('../models/Theatre');
+const {Theatre}=require('../models/Theatre')
 
-export const TheatreFormKyc = async (req,res)=>{
+const TheatreFormKyc = async (req,res)=>{
     const transaction=await sequelize.transaction();
         try{
             const {phno,email,theatre_name,theatre_address,state,city,pincode,seats,screens}=req.body;
-
+            const FindTheatre=await Theatre.findOne({where:{email}});
+            if(FindTheatre) return res.status(400).json({error:'Theatre already exists with this email'});
+            const user=req.user;
             const owner=await Theatre.create({
+                user_id:user.id,
                 phno,
                 email,
                 theatre_name,
@@ -27,7 +30,7 @@ export const TheatreFormKyc = async (req,res)=>{
             await transaction.commit();
 
 
-            const VERIFY_KYC_URL=`http://localhost:3000/theatre/kyc/${row.theatre_id}/${row.theatre_name}`;
+            const VERIFY_KYC_URL=`http://localhost:5173/theatre/kyc/${row.theatre_id}/${row.theatre_name}`;
 
             const mailOptions={
                 from:email,
@@ -70,7 +73,7 @@ export const TheatreFormKyc = async (req,res)=>{
         }
 }
 
-export const KYCPage=async (req,res)=>{
+    const KYCPage=async (req,res)=>{
     const transaction=await sequelize.transaction();
     try{
         const {id,name}=req.params;
@@ -84,7 +87,7 @@ export const KYCPage=async (req,res)=>{
     }
 }
 
-export const VerifyKyc= async(req,res)=>{
+    const VerifyKyc= async(req,res)=>{
     const transaction=await sequelize.transaction();
     try{
       const {isOk,theatre_id}=req.body;
@@ -100,9 +103,16 @@ export const VerifyKyc= async(req,res)=>{
         }
       await theatre.save();
       await transaction.commit();
+      return res.status(200).json({message:'Theatre KYC verified successfully'});
 
     }catch(err){
         if(transaction.finished!=='commit') await transaction.rollback();
         return res.status(400).json({error:err.message});
     }
+}
+
+module.exports={
+    TheatreFormKyc,
+    KYCPage,
+    VerifyKyc,
 }

@@ -1,4 +1,5 @@
 const {DataTypes} = require('sequelize');
+const User=require('./User');
 
 const sequelize=require('../config/database');
 
@@ -14,7 +15,7 @@ const Theatre=sequelize.define('Theatre',{
         user_id:{
             type:DataTypes.INTEGER,
             references:{
-                model:'User',
+                model:User,
                 key:'id',
             },
             allowNull:false,
@@ -62,4 +63,4 @@ const Theatre=sequelize.define('Theatre',{
     }
 );
 
-module.exports={TheatreOwner,Theatre};
+module.exports={Theatre};

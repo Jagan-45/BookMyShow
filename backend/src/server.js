@@ -2,9 +2,11 @@ const express=require('express')
 const sequelize=require('./config/database')
 const authRoutes=require('./routes/authRoutes')
 const AdminRoutes=require('./routes/AdminRoutes')
+const cors=require('cors')
 
 const app=express()
 app.use(express.json())
+app.use(cors())
 
 app.use('/api/v0/auth',authRoutes)
 app.use('/api/v0/admin',AdminRoutes)
