@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter as Router, Routes,Route} from 'react-router-dom'
 import StaticTheatreOwnerCheck from './components/Theatres/StaticTheatreOwner'
 
 function App() {
  
-
+  useEffect(()=>{
+    localStorage.setItem("okpage",false);
+  },[])
+ 
   return (
     <div>
       <Router>

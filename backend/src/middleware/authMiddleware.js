@@ -10,6 +10,7 @@ const verifyToken = (req,res,next) => {
 
     try {
         const decoded=jwt.verify(token,process.env.JWT_SECRET);
+        if(!decoded) throw new Error('Cannot decode token');
         req.user=decoded;
         next();
     } catch(err) {

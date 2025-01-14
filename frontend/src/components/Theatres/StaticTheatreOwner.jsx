@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import OkPage from './OkPage';
+import Loader from '../Loader';
 
 const StaticTheatreOwnerCheck = () => {
     const { id, name } = useParams();
     const [theatreData, setTheatreData] = useState({});
     const [status, setStatus] = useState(null);
+    const [isLoading,setIsLoading]=useState(false);
+    const [showResponsePage, SetshowResponsePage] = useState(()=>{
+        return localStorage.getItem("okpage")===true;
+    });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -28,6 +34,7 @@ const StaticTheatreOwnerCheck = () => {
     useEffect(() => {
         const verifyKyc = async () => {
             if (status === null) return;
+            setIsLoading(true);
             try {
                 const response = await fetch('http://localhost:3000/api/v0/admin/VerifyKyc', {
                     method: 'POST',
@@ -39,49 +46,61 @@ const StaticTheatreOwnerCheck = () => {
                         theatre_id: id
                     })
                 });
+                if(response.status === 200) {
+                    SetshowResponsePage(true)
+                    localStorage.setItem("okpage",true);
+                }
              
                 console.log('KYC verification response:', await response.json());
             } catch (error) {
                 console.error('Error verifying KYC:', error);
+            }
+            finally{
+                setIsLoading(false);
             }
         };
         verifyKyc();
     }, [status, id]);
 
     return (
-        <div className='min-h-screen bg-gradient-to-r from-zinc-50 to-slate-700 flex flex-col'>
-            <div className="sticky top-0 z-50 bg-gradient-to-r from-slate-50 to-slate-200 p-10">
-                <h1 className="flex flex-row justify-center items-center font-bold text-4xl bg-gradient-to-r from-zinc-900 to-slate-300 bg-clip-text text-transparent">
-                    Theatre KYC Verification
-                </h1>
-            </div>
-            
-            <div className="flex flex-row flex-1">
-                <div className="w-1/2 bg-gradient-to-r from-gray-50 to-gray-300 p-8 overflow-y-auto">
-                    <Card heading="Theatre Name" description={theatreData.theatre_name} />
-                    <Card heading="Phone Number" description={theatreData.phno} />
-                    <Card heading="Email" description={theatreData.email} />
-                    <Card heading="Theatre Address" description={theatreData.theatre_address} />
-                    <Card heading="State" description={theatreData.state} />
-                    <Card heading="City" description={theatreData.city} />
-                    <Card heading="Pincode" description={theatreData.pincode} />
-                    <Card heading="Screens" description={theatreData.screens} />
-                    <Card heading="Seats" description={theatreData.seats} />
+        <div>
+            {showResponsePage?(
+                <OkPage size={100} color={'#4CAF50'}/>
+            ): isLoading?<Loader/>:
+            <div className='min-h-screen bg-gradient-to-r from-zinc-50 to-slate-700 flex flex-col'>
+                <div className="sticky top-0 z-50 bg-gradient-to-r from-slate-50 to-slate-200 p-10">
+                    <h1 className="flex flex-row justify-center items-center font-bold text-4xl bg-gradient-to-r from-zinc-900 to-slate-300 bg-clip-text text-transparent">
+                        Theatre KYC Verification
+                    </h1>
+                </div>
+                
+                <div className="flex flex-row flex-1">
+                    <div className="w-1/2 bg-gradient-to-r from-gray-50 to-gray-300 p-8 overflow-y-auto">
+                        <Card heading="Theatre Name" description={theatreData.theatre_name} />
+                        <Card heading="Phone Number" description={theatreData.phno} />
+                        <Card heading="Email" description={theatreData.email} />
+                        <Card heading="Theatre Address" description={theatreData.theatre_address} />
+                        <Card heading="State" description={theatreData.state} />
+                        <Card heading="City" description={theatreData.city} />
+                        <Card heading="Pincode" description={theatreData.pincode} />
+                        <Card heading="Screens" description={theatreData.screens} />
+                        <Card heading="Seats" description={theatreData.seats} />
 
-                    <div className='flex flex-row space-x-4 mt-8'>
-                        <button className="bg-gradient-to-r from-lime-300 to-emerald-500 py-2 px-6 rounded-lg hover:opacity-80 transition-opacity duration-300 text-white"
-                            onClick={() => { handleVerification(true) }}
-                        >Accept</button>
-                        <button className="bg-gradient-to-r from-red-400 to-amber-600 py-2 px-6 rounded-lg hover:opacity-80 transition-opacity duration-300 text-white"
-                            onClick={() => { handleVerification(false) }}
-                        >Reject</button>
+                        <div className='flex flex-row space-x-4 mt-8'>
+                            <button className="bg-gradient-to-r from-lime-300 to-emerald-500 py-2 px-6 rounded-lg hover:opacity-80 transition-opacity duration-300 text-white"
+                                onClick={() => { handleVerification(true) }}
+                            >Accept</button>
+                            <button className="bg-gradient-to-r from-red-400 to-amber-600 py-2 px-6 rounded-lg hover:opacity-80 transition-opacity duration-300 text-white"
+                                onClick={() => { handleVerification(false) }}
+                            >Reject</button>
+                        </div>
+                    </div>
+
+                    <div className="w-1/2 bg-gradient-to-r from-slate-700 to-zinc-50 p-8 flex items-center justify-center">
+                        <AnimatedContent />
                     </div>
                 </div>
-
-                <div className="w-1/2 bg-gradient-to-r from-slate-700 to-zinc-50 p-8 flex items-center justify-center">
-                    <AnimatedContent />
-                </div>
-            </div>
+            </div>}
         </div>
     );
 };
