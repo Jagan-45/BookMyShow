@@ -1,6 +1,8 @@
 const { transporter } = require('../services/authServices');
 const sequelize = require('../config/database');
 const { Theatre } = require('../models/Theatre');
+const { Screens } = require('../models/Screens');
+const { Movies } = require('../models/Movies');
 
 const TheatreFormKyc = async (req, res) => {
     const transaction = await sequelize.transaction();
@@ -45,7 +47,7 @@ const TheatreFormKyc = async (req, res) => {
         res.status(201).json({ message: 'Theatre KYC submitted successfully. Please wait until the admin verifies your KYC.' });
     } catch (err) {
         if (transaction.finished !== 'commit') await transaction.rollback();
-        res.status(400).json({ error: err.message });
+        return res.status(400).json({ error: err.message });
     }
 };
 
@@ -60,7 +62,7 @@ const KYCPage = async (req, res) => {
         res.json({ theatre });
     } catch (err) {
         if (transaction.finished !== 'commit') await transaction.rollback();
-        res.status(400).json({ error: err.message });
+        return res.status(400).json({ error: err.message });
     }
 };
 
@@ -87,7 +89,7 @@ const VerifyKyc = async (req, res) => {
             };
 
             await transporter.sendMail(sendMail);
-            return res.status(200).json({ message: 'Theatre deleted successfully' });
+             res.status(200).json({ message: 'Theatre deleted successfully' });
         }
 
         await theatre.save();
@@ -104,12 +106,95 @@ const VerifyKyc = async (req, res) => {
         res.status(200).json({ message: 'Theatre KYC verified successfully' });
     } catch (err) {
         if (transaction.finished !== 'commit') await transaction.rollback();
-        res.status(400).json({ error: err.message });
+        return res.status(400).json({ error: err.message });
     }
 };
+
+const AddScreen = async (req, res) => {
+    const transaction=await sequelize.transaction();
+    try{
+        const {theatre_id,screen_name,seats,seat_layout}=req.body;
+        const theatre=await Theatre.findOne({where:{theatre_id}});
+        if(!theatre) throw new Error('Theatre not found');
+        const screen=await Screens.create({
+            theatre_id,
+            screen_name,
+            seats,
+            seat_layout
+        })
+        screen.save();
+        await transaction.commit();
+        res.status(201).json({message:'Screen added successfully'});
+    } catch(err){
+        if(transaction.finished !== 'commit') await transaction.rollback();
+        return res.status(400).json({error:err.message});
+}
+}
+
+const AddMovies = async (req, res) => {
+    const transaction=await sequelize.transaction();
+    try{
+        const {
+            theatre_id,movie_name,movie_duration,
+            movie_language,movie_genre,
+            movie_release_date,movie_description,
+            movie_rating,movie_poster
+            }=req.body;
+        const theatre=await Theatre.findOne({where:{theatre_id}});
+        if(!theatre) throw new Error('Theatre not found');
+        const movie=await Movies.create({
+            movie_name,
+            theatre_id,
+            movie_duration,
+            movie_language,
+            movie_genre,
+            movie_release_date,
+            movie_description,
+            movie_rating,
+            movie_poster
+        })
+        movie.save();
+        await transaction.commit();
+        res.status(201).json({message:'Movie added successfully'});
+    } catch(err){
+        if(transaction.finished !== 'commit') await transaction.rollback();
+        return  res.status(400).json({error:err.message});
+    }
+}
+
+const AddShows = async (req, res) => {
+    const transaction=sequelize.transaction();
+    try{
+        const {screen_id,theatre_id,show_time,movie_id,ticket_release_time,block_price,tickets_available}=req.body;
+        const theatre=await Theatre.findOne({where:{theatre_id}});
+        if(!theatre) throw new Error('Theatre not found');
+        const screen=await Screens.findOne({where:{screen_id}});
+        if(!screen) throw new Error('Screen not found');
+        const movie=await Movies.findOne({where:{movie_id}});
+        if(!movie) throw new Error('Movie not found');
+        const show=await Shows.create({
+            screen_id,
+            theatre_id,
+            show_time,
+            movie_id,
+            ticket_release_time,
+            block_price,
+            tickets_available
+        })
+        show.save();
+        await transaction.commit();
+        res.status(201).json({message:'Show added successfully'});
+    } catch(err){
+        if(transaction.finished !== 'commit') await transaction.rollback();
+        return res.status(400).json({error:err.message});
+    }
+}
 
 module.exports = {
     TheatreFormKyc,
     KYCPage,
     VerifyKyc,
+    AddScreen,
+    AddMovies,
+    AddShows,
 };
