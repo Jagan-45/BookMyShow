@@ -1,14 +1,15 @@
-const sequelize=require('./config/database')
+const {DataTypes}=require('sequelize')
+const sequelize=require('../config/database')
 const Theatre=require('./Theatre')
 
-const Movies=sequelize.define('Movies',{
+const Movies=sequelize.define('Movie',{
     movie_id:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         primaryKey:true,
         autoIncrement:true
     },
     theatre_id:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         references:{
             model:Theatre,
             key:'theatre_id'
@@ -16,38 +17,39 @@ const Movies=sequelize.define('Movies',{
         allowNull:false
     },
     movie_name:{
-        type:sequelize.DataTypes.STRING,
+        type:DataTypes.STRING,
         allowNull:false
     },
     movie_duration:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         allowNull:false
     },
     movie_language:{
-        type:sequelize.DataTypes.STRING,
+        type:DataTypes.STRING,
         allowNull:false
     },
     movie_genre:{
-        type:sequelize.DataTypes.STRING,
+        type:DataTypes.STRING,
         allowNull:false
     },
     movie_release_date:{
-        type:sequelize.DataTypes.DATE,
+        type:DataTypes.DATE,
         allowNull:false
     },
     movie_description:{
-        type:sequelize.DataTypes.STRING,
+        type:DataTypes.STRING,
         allowNull:false
     },
     movie_rating:{
-        type:sequelize.DataTypes.FLOAT,
+        type:DataTypes.FLOAT,
         allowNull:false
     },
     movie_poster:{
-        type:sequelize.DataTypes.BLOB,
+        type:DataTypes.BLOB,
         allowNull:false
     },
     
 });
 
-module.exports={Movies}
+
+module.exports=Movies;

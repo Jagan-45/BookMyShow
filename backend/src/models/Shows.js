@@ -1,16 +1,19 @@
-const sequelize=require('./config/database')
+const {DataTypes}=require('sequelize')
+const sequelize=require('../config/database')
 const Screens=require('./Screens')
 const Theatre=require('./Theatre')
 const Movies=require('./Movies')
+const scheduleSeatLayoutJob = require('../services/scheduler');
 
-const Shows=sequelize.define('Shows',{
+
+const Shows=sequelize.define('Show',{
     show_id:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         primaryKey:true,
         autoIncrement:true
     },
     screen_id:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         references:{
             model:Screens,
             key:'screen_id'
@@ -18,7 +21,7 @@ const Shows=sequelize.define('Shows',{
         allowNull:false
     },
     theatre_id:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         references:{
             model:Theatre,
             key:'theatre_id'
@@ -26,7 +29,7 @@ const Shows=sequelize.define('Shows',{
         allowNull:false
     },
     movie_id:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         references:{
             model:Movies,
             key:'movie_id'
@@ -34,21 +37,32 @@ const Shows=sequelize.define('Shows',{
         allowNull:false
     },
     show_time:{
-        type:sequelize.DataTypes.DATE,
+        type:DataTypes.DATE,
         allowNull:false
     },
     ticket_release_time:{
-        type:sequelize.DataTypes.DATE,
+        type:DataTypes.DATE,
         allowNull:false
     },
     block_price:{
-        type:sequelize.DataTypes.JSON,
+        type:DataTypes.JSON,
         allowNull:false
     },
     tickets_available:{
-        type:sequelize.DataTypes.INTEGER,
+        type:DataTypes.INTEGER,
         allowNull:false
     }
-});
+},
+{
+    hooks:{
+        afterCreate: async (show) => {
+            console.log(`New show created: ${show.show_id} Scheduling job for ticket release`);
+            await scheduleSeatLayoutJob(show);
+        }
+    }
+}
 
-module.exports={Shows}
+);
+
+
+module.exports = Shows;

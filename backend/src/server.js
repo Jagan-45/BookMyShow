@@ -11,6 +11,10 @@ app.use(cors())
 app.use('/api/v0/auth',authRoutes)
 app.use('/api/v0/admin',AdminRoutes)
 
+sequelize.authenticate().then(()=>{
+    console.log("Database connected");
+}).catch((err)=>console.log('Error connecting to DB',err));
+
 sequelize.sync({force:false}).then(()=>{
     console.log("Database connected");
     app.listen(3000,()=>{

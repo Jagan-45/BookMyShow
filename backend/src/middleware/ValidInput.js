@@ -80,7 +80,7 @@ const AdminFormSchema=z.object({
 const ScreenLayoutSchema=z.object({
     screen_name:z.string().min(3,'Screen name must be atleast 3 characters long'),
     seats:z.number().int('Seats must be an integer'),
-    seat_layout:z.json(),
+    seat_layout:z.record(z.unknown()),
 })
 
 const MovieLayoutSchema=z.object({
@@ -88,9 +88,9 @@ const MovieLayoutSchema=z.object({
     movie_duration:z.number().int('Movie duration must be an integer'),
     movie_language:z.string().min(1,'Movie language must be atleast 3 characters long'),
     movie_genre:z.string().min(1,'Movie genre must be atleast 3 characters long'),
-    movie_release_date:z.date(),
+    movie_release_date:z.string().min(1,'Movie release date must be atleast 3 characters long'),
     movie_description:z.string().min(1,'Movie description must be atleast 3 characters long'),
-    movie_rating:z.number().int('Movie rating must be an integer'),
+    movie_rating:z.number(),
     movie_poster:z.string().min(1,'Movie poster must be atleast 3 characters long'),
 })
 
@@ -98,9 +98,17 @@ const ShowLayoutSchema=z.object({
     screen_id:z.number().int('Screen id must be an integer'),
     theatre_id:z.number().int('Theatre id must be an integer'),
     movie_id:z.number().int('Movie id must be an integer'),
-    show_time:z.date(),
-    ticket_release_time:z.date(),
-    block_price:z.json(),
+    show_time: z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: 'Invalid show_time. Must be a valid date string.',
+    }),
+    ticket_release_time: z.string().refine((val) => !isNaN(Date.parse(val)), {
+        message: 'Invalid ticket_release_time. Must be a valid date string.',
+    }),
+    block_price:z.object({
+        Gold:z.number().int('Gold price must be an integer'),
+        Platinum:z.number().int('Platinum price must be an integer'),
+        Silver:z.number().int('Silver price must be an integer'),
+    }),
     tickets_available:z.number().int('Tickets available must be an integer'),
 })
 

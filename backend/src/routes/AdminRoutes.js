@@ -17,6 +17,6 @@ router.post('/:theatre_id/AddScreen',verifyToken,validateScreenLayout,AddScreen)
 
 router.post('/:theatre_id/AddMovies',verifyToken,validateMovieLayout,AddMovies);
 
-router.post('/:theatre_id/:screen_id/AddShows',verifyToken,verifyShowLayout,AddShows);
+router.post('/:theatre_id/:screen_id/:movie_id/AddShows',verifyToken,verifyShowLayout,AddShows);
 
 module.exports=router;

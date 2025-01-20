@@ -63,4 +63,4 @@ const Theatre=sequelize.define('Theatre',{
     }
 );
 
-module.exports={Theatre};
+module.exports=Theatre;

@@ -1,8 +1,9 @@
 const { transporter } = require('../services/authServices');
 const sequelize = require('../config/database');
-const { Theatre } = require('../models/Theatre');
-const { Screens } = require('../models/Screens');
-const { Movies } = require('../models/Movies');
+const  Theatre  = require('../models/Theatre');
+const  Screens  = require('../models/Screens');
+const  Movies  = require('../models/Movies');
+const Shows  = require('../models/Shows');
 
 const TheatreFormKyc = async (req, res) => {
     const transaction = await sequelize.transaction();
@@ -163,7 +164,7 @@ const AddMovies = async (req, res) => {
 }
 
 const AddShows = async (req, res) => {
-    const transaction=sequelize.transaction();
+    const transaction=await sequelize.transaction();
     try{
         const {screen_id,theatre_id,show_time,movie_id,ticket_release_time,block_price,tickets_available}=req.body;
         const theatre=await Theatre.findOne({where:{theatre_id}});

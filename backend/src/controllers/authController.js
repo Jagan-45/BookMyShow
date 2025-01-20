@@ -18,7 +18,7 @@ const register = async (req, res) => {
             password: hashedPassword,
             otp,
             otpExpiresAt,
-        });
+        },{transaction});
 
         if(!user) throw new Error('User not created');
 
