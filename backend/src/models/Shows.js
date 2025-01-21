@@ -4,6 +4,7 @@ const Screens=require('./Screens')
 const Theatre=require('./Theatre')
 const Movies=require('./Movies')
 const scheduleSeatLayoutJob = require('../services/scheduler');
+const scheduleSeatRemovalAfterShow = require('../services/scheduler');
 
 
 const Shows=sequelize.define('Show',{
@@ -58,6 +59,7 @@ const Shows=sequelize.define('Show',{
         afterCreate: async (show) => {
             console.log(`New show created: ${show.show_id} Scheduling job for ticket release`);
             await scheduleSeatLayoutJob(show);
+            await scheduleSeatRemovalAfterShow(show);
         }
     }
 }

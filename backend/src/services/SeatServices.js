@@ -19,4 +19,10 @@ const cloneSeatLayoutToRedis = async (showId) => {
     }
 };
 
-module.exports = cloneSeatLayoutToRedis;
+const removeSeatLayoutFromRedis = async (showId) => {
+    const redisKey = `seat_layout:show:${showId}`;
+    await redis.del(redisKey);
+    console.log('Seat layout removed from Redis:', redisKey);
+}
+
+module.exports = cloneSeatLayoutToRedis, removeSeatLayoutFromRedis;

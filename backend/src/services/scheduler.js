@@ -1,5 +1,6 @@
 const schedule=require('node-schedule');
 const cloneSeatLayoutToRedis=require('./SeatServices');
+const removeSeatLayoutFromRedis=require('./SeatServices');
 
 
 const scheduleSeatLayoutJob = async (show) => {
@@ -15,6 +16,16 @@ const scheduleSeatLayoutJob = async (show) => {
     } else {
         console.warn(`Ticket release time for show ${show_id} is in the past. No job scheduled.`);
     }
+}
+
+const scheduleSeatRemovalAfterShow = async (show) => {
+    const {show_id,show_time}=show;
+    const release_time=new Date(show_time);
+
+    schedule.scheduleJob(release_time,async () => {
+        console.log(`Removing seat layout from Redis for show ${show_id} at ${release_time}`);
+        await removeSeatLayoutFromRedis(show_id);
+    });
 }
 
 module.exports=scheduleSeatLayoutJob;
